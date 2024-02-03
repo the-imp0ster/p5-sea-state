@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>~ Sea State ~</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+
+    <style>
+        * {
+            font-family: monospace;
+        }
+
+        body {
+            background-color: bisque;
+        }
+
+        .slider {
+            cursor: pointer;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <h3>~ sea state with p5.js ~</h3>
+
+    <input id="seaStateSlider" type="range" min="0" max="10" value="0" class="slider">
+
+    <script>
+        let seaState = 0;
+
+        let verticalMovementSpeed = 0.01;
+        let verticalMovementAmplitude = 20;
+
+        function getWavesForSeaState(seaState) {
+
+            // mappings for each sea state level
+            const mappings = [
+                { amplitude: 10, speed: 0.1, wavelength: 400 },
+                { amplitude: 20, speed: 0.2, wavelength: 500 },
+                { amplitude: 30, speed: 0.3, wavelength: 600 },
+                { amplitude: 40, speed: 0.4, wavelength: 700 },
+                { amplitude: 50, speed: 0.5, wavelength: 800 },
+                { amplitude: 60, speed: 0.6, wavelength: 900 },
+                { amplitude: 70, speed: 0.7, wavelength: 1000 },
+                { amplitude: 80, speed: 0.8, wavelength: 1100 },
+                { amplitude: 90, speed: 0.9, wavelength: 1200 },
+                { amplitude: 100, speed: 1.0, wavelength: 1300 },
+                { amplitude: 110, speed: 1.1, wavelength: 1400 },
+            ];
+
+            // ensure seaState is within bounds
+            seaState = Math.max(0, Math.min(seaState, mappings.length - 1));
+            return mappings[seaState];
+        }
+
+
+        function setup() {
+
+            createCanvas(windowWidth * .5, windowHeight * .5);
+
+            // grab the slider and listen to it
+            const slider = document.getElementById('seaStateSlider');
+
+            slider.addEventListener('input', (e) => {
+                seaState = parseInt(e.target.value);
+
+                // restart drawing when sea state is changed
+                loop();
+            });
+        }
+
+        function draw() {
+            background(220);
+            // draw the waves, based on the selected sea state
+            drawWaves();
+        }
+
+
+        function drawWaves() {
+            // get the wave parameters based on the selected sea state
+            let waveParams = getWavesForSeaState(seaState);
+
+            // calculate vertical movement for each layer
+            let time = millis() * 0.001;
+
+            // color of the wave layers
+            let waveColor = color(0, 80, 140, 255);
+
+            // currently generating 20 wave layers
+            for (let layer = 0; layer < 20; layer++) {
+                let layerYOffset = sin(time * verticalMovementSpeed + layer) * verticalMovementAmplitude;
+
+                fill(waveColor);
+                noStroke();
+                beginShape();
+
+                // wavelength changes based on the sea state (large = inc wavelength)
+                let layerWavelength = waveParams.wavelength * (1 + layer * 0.2);
+
+                for (let x = 0; x <= width; x += 10) {
+                    // using some noise on the wave height for more natural variation, not so robotic
+                    let waveHeight = noise(x * 0.01, time * 0.1) * waveParams.amplitude;
+
+                    // y position of each vertex
+                    let angle = (x / layerWavelength) * TWO_PI;
+                    let y = height * .5 + layerYOffset + sin(angle + time) * waveHeight;
+
+                    vertex(x, y);
+                }
+
+                // complete the shape at the bottom corners
+                vertex(width, height);
+                vertex(0, height);
+                endShape(CLOSE);
+            }
+        }
+
+
+
+
+
+
+
+
+    </script>
+
+
+
+</body>
+
+</html>
